@@ -13,17 +13,17 @@ export function meta({}: Route.MetaArgs) {
 export default function Home() {
   return <main className="bg-[url('/images/bg-main.svg')] bg-cover ">
     <Navbar/>
-    <section className="main-section">
-      <div className="page-heading">
+    <section className="flex flex-col items-center gap-8 pt-12 max-sm:mx-2 mx-15 pb-5">
+      <div className="page-heading py-16">
         <h1>Track Your Applications & Resume Ratings</h1>
         <h2>Review your submission and check AI-powered feedback.</h2>
       </div>
-    </section> 
     {resumes.length > 0 && (<div className="flex flex-wrap items-start max-md:flex-col max-md:items-center gap-6 max-sm:gap-3 w-full max-w-[1850px] justify-evenly">
       {resumes.map((resume) => (
         <ResumeCard key={resume.id} resume={resume} />
       )
-      )}
+    )}
     </div>)}
+    </section> 
   </main>
 }
