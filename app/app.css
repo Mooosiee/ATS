@@ -18,6 +18,10 @@
   --color-badge-yellow-text: #73321b;
 }
 
+/* Which should you use?
+
+@apply → when combining existing Tailwind utilities
+@utility or custom CSS → when you need custom properties Tailwind doesn'thave (like your gradient) */
 html,
 body {
   @apply bg-white;

@@ -9,6 +9,8 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { usePuterStore } from "./lib/puter";
+import { useEffect } from "react";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -24,6 +26,15 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  //initalizing puter
+  const { init } = usePuterStore();
+  //calling init to check if puter exists in the window object
+  //if it does we can proceed with authentication checks
+  //  if not we wait for it to load
+  //but why use the useEffect react hook?
+  useEffect(() => {
+    init();
+  },[init])
   return (
     <html lang="en">
       <head>
