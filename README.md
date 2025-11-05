@@ -1,6 +1,6 @@
-# ATS — Resume analyzer (demo)
+# ATS — Resume analyzer
 
-Small demo app that converts uploaded PDF resumes to images, stores them in Puter (an injected SDK), and runs an AI feedback pipeline to give ATS-friendly suggestions and scores.
+ Web app that converts uploaded PDF resumes to images, stores them in Puter (an injected SDK), and runs an AI feedback pipeline to give ATS-friendly suggestions and scores.
 
 This project uses React + TypeScript + Vite (via react-router dev tooling), Tailwind CSS, PDF.js for PDF rendering, and a Puter SDK injected at runtime to handle storage, auth and AI calls.
 
