@@ -33,4 +33,13 @@ export function formatSize(bytes: number): string {
   return `${format(bytes / GB)} GB`;
 }
 
+
+
+//# Explanation of generateUUID function
+// The generateUUID function generates a unique identifier (UUID) using the crypto.randomUUID() method.
+// This method is part of the Web Crypto API and provides a simple and secure way to create UUIDs, which are commonly used for uniquely identifying objects or sessions in applications.
+//its built in ?
+//yes, crypto.randomUUID() is a built-in method in modern web browsers and Node.js environments that generates a random UUID (Universally Unique Identifier) compliant with RFC 4122 version 4.
+export const generateUUID = () => crypto.randomUUID();
+
 export default formatSize;
