@@ -87,18 +87,4 @@ const msg = err instanceof Error ? err.message : String(err);
 
 - Inspect actual AI responses during development by adding `console.log(feedback)` right after `await ai.feedback(...)` in `app/routes/upload.tsx`. That makes it easy to update `types/puter.d.ts` to match real output.
 
-## Contributing / learning
 
-This project is a learning demo. If you're following a tutorial, it's normal to not understand everything up-front. Focus on the components you need to change. When you discover a runtime shape (e.g., AI returns an array), update the type declarations and add a small helper (e.g., `getAIContent`) to normalize the responses.
-
-If you want me to:
-
-- add a small `getAIContent` helper and wire it into the upload flow,
-- tighten `types/puter.d.ts` to reflect array item shapes (e.g. `{ type: 'text'; text: string }`), or
-- add a quick CONTRIBUTING.md or more detailed docs for local development — tell me which and I will add it.
-
-## License
-
-This tutorial/demo repo has no license file included. If you plan to publish or share it, add a `LICENSE` file (MIT is a common choice for demos).
-
-Happy hacking!
