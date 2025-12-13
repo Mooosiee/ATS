@@ -6,6 +6,14 @@ import { Navbar } from "~/components/Navbar";
 import { generateUUID } from "~/lib/formatSize";
 import convertPdfToImage from "~/lib/pdf2img";
 import { usePuterStore } from "~/lib/puter";
+import type { Route } from "../+types/root";
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "Resumind | Upload" },
+    { name: "description", content: "Upload your resume for review" },
+  ];
+}
 
 const Upload = () => {
   //state to know whether the file is being processed
@@ -109,6 +117,7 @@ const Upload = () => {
     // To ensure that the updated data object, which now includes the feedback from the AI analysis, is saved back to the key-value store (kv) under the same unique identifier for this analysis session.
     await kv.set(`resume:${uuid}`, JSON.stringify(data));
     setStatusText("Analysis complete ,redirecting...");
+    navigate(`resume/${uuid}`);
   };
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     //By default, submitting a form in HTML refreshes the page —

@@ -1,4 +1,4 @@
-//so his puter.ts is built completely by the user?
+//so this puter.ts is built completely by the user?
 // yes, this puter.ts file is custom-built to create a Zustand store that interfaces with the Puter.js SDK.
 // It defines the types and methods needed to interact with Puter.js functionalities like authentication, file system operations, AI interactions, and key-value storage.
 // This file is not provided by Puter.js but is created by the developer to manage and utilize Puter.js features in a structured way within their application.
@@ -7,7 +7,7 @@
 import { create } from "zustand";
 // A LOT OF FILE UNDERSTANDING IS LEFT
 
-// // This global declaration of windows defines all of the diffrent functionalities that we can extract from puter for ts
+// This global declaration of windows defines all of the diffrent functionalities that we can extract from puter for ts
 // A TypeScript global declaration that tells the compiler: window.puter exists and has an auth object with these methods.
 // Why: The Puter SDK is injected via a < script > tag(not an npm module).TS needs this to avoid “property does not exist on type Window”
 //  errors and to give you autocompletion / type checking when you use window.puter

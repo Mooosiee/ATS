@@ -6,7 +6,12 @@ import { usePuterStore } from "~/lib/puter"
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 
-
+//why do we have this meta function?
+//because we want to set the title and description of the page
+//this is used by react-router to set the title and description of the page
+//this is used by search engines to index the page
+//this is used by social media to show the title and description of the page when shared
+//this is used by screen readers to read the title and description of the page
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Resumind" },
@@ -25,6 +30,9 @@ export default function Home() {
   useEffect(() => {
     if (!auth.isAuthenticated) {
       //trying to access home page , but since for now they are not authenticated we redirect them to auth page
+      //could u explain the url path?
+      //the ?next=/ part is a query parameter that indicates where to redirect the user after they successfully authenticate
+      //in this case, we want to redirect them back to the home page (/)
       navigate('/auth?next=/'); 
     }
 
