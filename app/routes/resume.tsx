@@ -87,7 +87,7 @@ const Resume = () => {
         </Link>
       </nav>
       <div className="flex w-full max-lg:flex-col-reverse">
-        <section className="flex flex-col w-1/2 max-lg:w-full px-6 rounded-xs bg-[url('/images/bg-small.svg')] bg-cover h-[100vh] sticky top-0 items-center justify-center">
+        <section className="flex flex-col w-1/2 max-lg:w-full px-6 rounded-xs h-[100vh] sticky top-0 items-center justify-center">
           {imageUrl && resumeUrl && (
             <div className="animate-in fade-in duration-1000 max-w-xl:h-fit w-fit h-[90%] gradient-border">
               {/* what is target and rel attributes? */}
