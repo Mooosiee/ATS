@@ -16,6 +16,8 @@
   --color-badge-green-text: #254d4a;
   --color-badge-red-text: #752522;
   --color-badge-yellow-text: #73321b;
+  --color-check-green:#039855;
+  --color-warning-yellow:#F79009;
 }
 
 /* Which should you use?
@@ -65,10 +67,10 @@ form {
     @apply flex flex-row justify-between items-center p-4 border-b border-gray-200;
   }
   .resume-summary {
-    @apply flex flex-row items-center justify-center p-4 gap-4;
+    @apply flex flex-row items-center justify-center gap-2;
     
   .category {
-    @apply flex flex-row gap-2 items-center bg-gray-50 rounded-2xl p-4 w-full justify-between;
+    @apply flex flex-row items-center gap-4 bg-gray-50 rounded-2xl p-4 w-full justify-between;
     }
   }
   .back-button {

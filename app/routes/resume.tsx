@@ -2,8 +2,10 @@ import { Link, useNavigate, useParams } from "react-router";
 import type { Route } from "../+types/root";
 import { useEffect, useState } from "react";
 import { usePuterStore } from "~/lib/puter";
-import { ScoreCircle } from "~/components/ScoreCircle";
 import type { Feedback } from "types";
+import Summary from "~/components/Summary";
+import ATS from "~/components/ATS";
+import Details from "~/components/Details";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -78,14 +80,14 @@ const Resume = () => {
 
   return (
     <main className="!pt-0">
-      <nav className="flex p-4">
+      <nav className="flex p-4 rounded-2xl shadow-md">
         <Link to="/" className="flex items-center border rounded-lg shadow-sm border-gray-200 gap-2 p-2">
           <img src="/icons/back.svg" alt="" className="w-2.5 h-2.5"/>
           <span className="font-semibold text-gray-800 text-sm">Back to Homepage</span>
         </Link>
       </nav>
       <div className="flex w-full max-lg:flex-col-reverse">
-        <section className="flex flex-col w-1/2 max-lg:w-full px-8 py-6 bg-[url('/images/bg-small.svg')] bg-cover h-[100vh] sticky top-0 items-center justify-center">
+        <section className="flex flex-col w-1/2 max-lg:w-full px-6 rounded-xs bg-[url('/images/bg-small.svg')] bg-cover h-[100vh] sticky top-0 items-center justify-center">
           {imageUrl && resumeUrl && (
             <div className="animate-in fade-in duration-1000 max-w-xl:h-fit w-fit h-[90%] gradient-border">
               {/* what is target and rel attributes? */}
@@ -102,13 +104,15 @@ const Resume = () => {
             </div>
           )}
         </section>
-        <section className="flex flex-col w-1/2 px-8 py-6 max-lg:w-full">
+        <section className="flex flex-col gap-3 w-1/2 px-8 py-6 max-lg:w-full">
           {/* what does ! mean? in classes? */}
           {/* The ! symbol overrides Tailwind's default behavior and forces the style to be applied */}
-          <h2 className="text-4xl !text-black font-bold">Resume Review</h2>
+          <h2 className="!text-4xl !text-black font-bold">Resume Review</h2>
           {feedback ? (
-            <div className="animate-in fade-in duration-1000">
-              <ScoreCircle score={feedback.overallScore} />
+            <div className="flex flex-col gap-4 animate-in fade-in duration-1000">
+              <Summary feedback={feedback}></Summary>
+              <ATS score = {feedback.ATS.score || 0} suggestions = {feedback.ATS.tips || []}></ATS>
+              <Details feedback={feedback}></Details>
             </div>
           ) : (
             <img src="/images/resume-scan-2.gif" alt="" />  
