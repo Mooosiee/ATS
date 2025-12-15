@@ -94,7 +94,7 @@ const Upload = () => {
       companyName,
       jobTitle,
       jobDesc,
-      feedback: '',
+      feedback: "",
     };
     //what are we awaiting here?
     //We are awaiting the completion of the data being stored in the key-value store (kv) under the unique identifier for this analysis session.
@@ -108,8 +108,11 @@ const Upload = () => {
     );
     if (!feedback) return setStatusText("Error : Failed to analyze resume");
 
-    //extract feedback                                                                            //if it is an array then we get the first element's text                
-    const feedbackData = typeof feedback.message.content === "string" ? feedback.message.content : feedback.message.content[0].text;
+    //extract feedback                                                                            //if it is an array then we get the first element's text
+    const feedbackData =
+      typeof feedback.message.content === "string"
+        ? feedback.message.content
+        : feedback.message.content[0].text;
     //why should i json.parse here?
     //if feedbackData is a JSON string, parsing it converts it into a JavaScript object for easier manipulation and access to its properties.
     data.feedback = JSON.parse(feedbackData);
@@ -119,7 +122,7 @@ const Upload = () => {
     setStatusText("Analysis complete ,redirecting...");
     navigate(`resume/${uuid}`);
   };
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     //By default, submitting a form in HTML refreshes the page —
     //but React apps are single-page apps, so we don’t want that.
     e.preventDefault();
@@ -131,7 +134,12 @@ const Upload = () => {
     const jobDesc = formData.get("job-description") as string;
 
     if (!file) return;
-    handleAnalyze({ companyName, jobTitle, jobDesc, file });
+    try {
+      await handleAnalyze({ companyName, jobTitle, jobDesc, file });
+    } catch (err) {
+      console.error(err);
+    }
+
     // handle file upload here
   };
   return (

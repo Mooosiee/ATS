@@ -1,12 +1,28 @@
 import { Link } from "react-router";
 import { ScoreCircle } from "./ScoreCircle";
+import { usePuterStore } from "~/lib/puter";
+import { useEffect, useState } from "react";
+import type { Resume } from "types";
+
 //props (short for properties) are how you pass data from a parent component down to a child component.
 //inline type
 const ResumeCard = ({
   resume: { id, companyName, jobTitle, feedback, imagePath },
 }: {
-  resume: Resume;
-}) => {
+    resume: Resume;
+  }) => {
+  const { fs } = usePuterStore();
+  const [ resumeurl, setResumeUrl ] = useState('');
+
+  useEffect(() => {
+      const loadResume = async () => {
+        const blob = await fs.read(imagePath);
+        if (!blob) return;
+        let url = URL.createObjectURL(blob);
+        setResumeUrl(url);
+      }
+      loadResume();
+    },[imagePath])
   return (
     // DID NOT ADD ANIMATIONS
     // Flex makes the inline Link tag a block level element and then all w/h and styling works
@@ -27,6 +43,7 @@ const ResumeCard = ({
           {jobTitle && (
             <h3 className="text-lg text-gray-500 break-words">{jobTitle}</h3>
           )}
+          {!companyName && !jobTitle && <h2 className="!text-black font-bold">Resume</h2>}
         </div>
         <div className="flex-shrink-0">
           <ScoreCircle score={feedback.overallScore} />
@@ -35,7 +52,7 @@ const ResumeCard = ({
       {/* Resume image */}
       <div className="bg-gradient-to-b from-light-blue-100 to-light-blue-200 p-4 rounded-2xl ">
         <img
-          src={imagePath}
+          src={resumeurl}
           alt="resume"
           className="w-full h-[350px] max-sm:h-[200px] object-cover object-top"
         />
