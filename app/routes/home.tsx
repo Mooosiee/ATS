@@ -2,8 +2,8 @@ import { Navbar } from "~/components/Navbar";
 import type { Route } from "./+types/home";
 import { resumes } from "constants/index";
 import ResumeCard from "~/components/ResumeCard";
-import { usePuterStore } from "~/lib/puter"
-import { useEffect , useState } from "react";
+import { usePuterStore } from "~/lib/puter";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import type { Resume } from "types";
 
@@ -21,11 +21,11 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const {auth,kv} = usePuterStore();
+  const { auth, kv } = usePuterStore();
   //whenever use tries to access secure route when not authenticated we can redirect them to auth
   //and after succesfull auth we can automatically redirect them back to the page they wanted to access in the first place
   //how that works
-  const location = useLocation();//comes from react router
+  const location = useLocation(); //comes from react router
   const navigate = useNavigate();
   //useeffect will check isAuthenticated and redirect to dashboard
   const [resumes, setResumes] = useState<Resume[]>([]);
@@ -37,54 +37,82 @@ export default function Home() {
   useEffect(() => {
     const loadResume = async () => {
       setLoadingResumes(true);
-      const resumes = (await kv.list('resume:*', true)) as KVItem[];
-      const parsedResumes = resumes?.map((item) => (JSON.parse(item.value) as Resume));
+      const resumes = (await kv.list("resume:*", true)) as KVItem[];
+      const parsedResumes = resumes
+        ?.filter((item) => item.value !== "") // Skip deleted (empty) entries
+        ?.map((item) => JSON.parse(item.value) as Resume);
       setResumes(parsedResumes || []);
       setLoadingResumes(false);
-    }
+    };
     loadResume();
   }, [kv]);
+
+  const handleDeleteResume = async (resumeId: string) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this resume? This action cannot be undone.",
+      )
+    ) {
+      return;
+    }
+    try {
+      const result = await kv.remove(`resume:${resumeId}`);
+      console.log("Delete result:", result);
+      setResumes((prevResumes) => prevResumes.filter((r) => r.id !== resumeId));
+    } catch (error) {
+      console.error("Failed to delete resume:", error);
+    }
+  };
   useEffect(() => {
     if (!auth.isAuthenticated) {
       //trying to access home page , but since for now they are not authenticated we redirect them to auth page
       //could u explain the url path?
       //the ?next=/ part is a query parameter that indicates where to redirect the user after they successfully authenticate
       //in this case, we want to redirect them back to the home page (/)
-      navigate('/auth?next=/'); 
+      navigate("/auth?next=/");
     }
+  }, [auth.isAuthenticated]);
+  console.log(loadingResumes, resumes);
 
-  },[auth.isAuthenticated])
-  console.log(loadingResumes,resumes)
-  
-  return <main className="bg-[url('/images/bg-main.svg')] bg-cover ">
-    <Navbar/>
-    <section className="flex flex-col items-center gap-8 pt-12 max-sm:mx-2 mx-15 pb-5">
-      <div className="page-heading py-16">
-        <h1>Track Your Applications & Resume Ratings</h1>
-        {!loadingResumes && resumes?.length === 0 ? (
+  return (
+    <main className="bg-[url('/images/bg-main.svg')] bg-cover ">
+      <Navbar />
+      <section className="flex flex-col items-center gap-8 pt-12 max-sm:mx-2 mx-15 pb-5">
+        <div className="page-heading py-16">
+          <h1>Track Your Applications & Resume Ratings</h1>
+          {!loadingResumes && resumes?.length === 0 ? (
             <h2>No resumes found. Upload your first resume to get feedback.</h2>
-        ): (
-          <h2>Review your submissions and check AI-powered feedback.</h2>
-        )}
-      </div>
-      {loadingResumes && (
+          ) : (
+            <h2>Review your submissions and check AI-powered feedback.</h2>
+          )}
+        </div>
+        {loadingResumes && (
           <div className="flex flex-col items-center justify-center">
             <img src="/images/resume-scan-2.gif" className="w-[200px]" />
           </div>
-      )}
-    {!loadingResumes && resumes.length > 0 && (<div className="flex flex-wrap items-start max-md:flex-col max-md:items-center gap-6 max-sm:gap-3 w-full max-w-[1850px] justify-evenly">
-      {resumes.map((resume) => (
-        <ResumeCard key={resume.id} resume={resume} />
-      )
-    )}
-      </div>)}
-      {!loadingResumes && resumes?.length === 0 && (
+        )}
+        {!loadingResumes && resumes.length > 0 && (
+          <div className="flex flex-wrap items-start max-md:flex-col max-md:items-center gap-6 max-sm:gap-3 w-full max-w-[1850px] justify-evenly">
+            {resumes.map((resume) => (
+              <ResumeCard
+                key={resume.id}
+                resume={resume}
+                onDelete={handleDeleteResume}
+              />
+            ))}
+          </div>
+        )}
+        {!loadingResumes && resumes?.length === 0 && (
           <div className="flex flex-col items-center justify-center mt-10 gap-4">
-            <Link to="/upload" className="primary-button w-fit text-xl font-semibold">
+            <Link
+              to="/upload"
+              className="primary-button w-fit text-xl font-semibold"
+            >
               Upload Resume
             </Link>
           </div>
-      )}
-    </section> 
-  </main>
+        )}
+      </section>
+    </main>
+  );
 }

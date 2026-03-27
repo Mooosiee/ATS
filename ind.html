@@ -1,0 +1,15 @@
+<html>
+<body>
+    <script src="https://js.puter.com/v2/"></script>
+    <script>
+        (async () => {
+            // Fetch all models
+            const models = await puter.ai.listModels();
+
+            models.forEach((model, index) => {
+                console.log(`Model ${index + 1} : ${model.id}\n`);
+            });
+        })();
+    </script>
+</body>
+</html>

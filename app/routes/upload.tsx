@@ -29,6 +29,40 @@ const Upload = () => {
   const handleFileSelect = (file: File | null) => {
     setFile(file);
   };
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        img.src = reader.result as string;
+      };
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // 🔥 MUCH smaller size
+        const maxWidth = 500;
+        const scale = maxWidth / img.width;
+
+        canvas.width = maxWidth;
+        canvas.height = img.height * scale;
+
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // 🔥 aggressive compression
+        const base64 = canvas.toDataURL("image/jpeg", 0.4).split(",")[1];
+
+        console.log("NEW SIZE:", base64.length);
+
+        resolve(base64);
+      };
+
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
   //this function will convert the uploaded resume into a format suitable for analysis
   const handleAnalyze = async ({
     companyName,
@@ -100,22 +134,51 @@ const Upload = () => {
     //We are awaiting the completion of the data being stored in the key-value store (kv) under the unique identifier for this analysis session.
     await kv.set(`resume:${uuid}`, JSON.stringify(data));
     setStatusText("Analyzing resume...");
+    const base64Image = await fileToBase64(imageFile.file);
+    const res = await fetch("/api/analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      // sending image instead of text because text is not being extracted properly from the pdf and also the ai model can analyze the image and give feedback based on that
+      body: JSON.stringify({
+        base64Image,
+        jobTitle,
+        jobDescription: jobDesc,
+      }),
+    });
 
-    const feedback = await ai.feedback(
-      // pass jobDescription to match the prepareInstructions parameter name
-      uploadedFile.path,
-      prepareInstructions({ jobTitle, jobDescription: jobDesc })
-    );
-    if (!feedback) return setStatusText("Error : Failed to analyze resume");
-
-    //extract feedback                                                                            //if it is an array then we get the first element's text
-    const feedbackData =
-      typeof feedback.message.content === "string"
-        ? feedback.message.content
-        : feedback.message.content[0].text;
-    //why should i json.parse here?
-    //if feedbackData is a JSON string, parsing it converts it into a JavaScript object for easier manipulation and access to its properties.
-    data.feedback = JSON.parse(feedbackData);
+    const result = await res.json();
+    console.log("API RESULT:", result);
+    if (!res.ok) {
+      return setStatusText("Error: Failed to analyze resume");
+    }
+    // // puter requires websockets hence im using GEMINI API to get feedback from the ai model
+    // const feedback = await ai.feedback(
+    //   // pass jobDescription to match the prepareInstructions parameter name
+    //   uploadedFile.path,
+    //   prepareInstructions({ jobTitle, jobDescription: jobDesc }),
+    // );
+    // if (!feedback) return setStatusText("Error : Failed to analyze resume");
+    // // i am not getting any feedback here ,literally 0 in my deployed app
+    let jsonString = result.result.trim();
+    // Extract JSON from markdown code block if present
+    const jsonMatch = jsonString.match(/```json\s*(\{[\s\S]*?\})\s*```/);
+    if (jsonMatch) {
+      jsonString = jsonMatch[1];
+    } else if (!jsonString.startsWith("{")) {
+      return setStatusText("Error: Invalid response format from analysis API");
+    }
+    const feedback = JSON.parse(jsonString);
+    data.feedback = feedback;
+    //extract feedback => Replacing this with above                                                                      //if it is an array then we get the first element's text
+    // const feedbackData =
+    //   typeof feedback.message.content === "string"
+    //     ? feedback.message.content
+    //     : feedback.message.content[0].text;
+    // //why should i json.parse here?
+    // //if feedbackData is a JSON string, parsing it converts it into a JavaScript object for easier manipulation and access to its properties.
+    // data.feedback = JSON.parse(feedbackData);
     //why are we setting it again?
     // To ensure that the updated data object, which now includes the feedback from the AI analysis, is saved back to the key-value store (kv) under the same unique identifier for this analysis session.
     await kv.set(`resume:${uuid}`, JSON.stringify(data));

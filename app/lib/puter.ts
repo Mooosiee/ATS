@@ -35,7 +35,7 @@ declare global {
         //what is blob : A Blob (Binary Large Object) represents immutable raw data.
         write: (
           path: string,
-          data: string | File | Blob
+          data: string | File | Blob,
         ) => Promise<File | undefined>;
         //above is given a function that takes a path and data (string, File, or Blob) and returns a Promise that resolves to a File or undefined.
         read: (path: string) => Promise<Blob>;
@@ -51,11 +51,11 @@ declare global {
           prompt: string | ChatMessage[],
           imageURL?: string | PuterChatOptions,
           testMode?: boolean,
-          options?: PuterChatOptions
+          options?: PuterChatOptions,
         ) => Promise<Object>;
         img2txt: (
           image: string | File | Blob,
-          testMode?: boolean
+          testMode?: boolean,
         ) => Promise<string>;
       };
       // what is kv here : key-value store for storing and retrieving simple data pairs.
@@ -64,7 +64,7 @@ declare global {
       kv: {
         get: (key: string) => Promise<string | null>;
         set: (key: string, value: string) => Promise<boolean>;
-        delete: (key: string) => Promise<boolean>;
+        remove: (key: string, ...paths: string[]) => Promise<boolean>;
         list: (pattern: string, returnValues?: boolean) => Promise<string[]>;
         flush: () => Promise<boolean>;
       };
@@ -90,7 +90,7 @@ interface PuterStore {
   fs: {
     write: (
       path: string,
-      data: string | File | Blob
+      data: string | File | Blob,
     ) => Promise<File | undefined>;
     read: (path: string) => Promise<Blob | undefined>;
     upload: (file: File[] | Blob[]) => Promise<FSItem | undefined>;
@@ -102,24 +102,24 @@ interface PuterStore {
       prompt: string | ChatMessage[],
       imageURL?: string | PuterChatOptions,
       testMode?: boolean,
-      options?: PuterChatOptions
+      options?: PuterChatOptions,
     ) => Promise<AIResponse | undefined>;
     feedback: (
       path: string,
-      message: string
+      message: string,
     ) => Promise<AIResponse | undefined>;
     img2txt: (
       image: string | File | Blob,
-      testMode?: boolean
+      testMode?: boolean,
     ) => Promise<string | undefined>;
   };
   kv: {
     get: (key: string) => Promise<string | null | undefined>;
     set: (key: string, value: string) => Promise<boolean | undefined>;
-    delete: (key: string) => Promise<boolean | undefined>;
+    remove: (key: string, ...paths: string[]) => Promise<boolean | undefined>;
     list: (
       pattern: string,
-      returnValues?: boolean
+      returnValues?: boolean,
     ) => Promise<string[] | KVItem[] | undefined>;
     flush: () => Promise<boolean | undefined>;
   };
@@ -351,7 +351,7 @@ export const usePuterStore = create<PuterStore>((set, get) => {
     prompt: string | ChatMessage[],
     imageURL?: string | PuterChatOptions,
     testMode?: boolean,
-    options?: PuterChatOptions
+    options?: PuterChatOptions,
   ) => {
     const puter = getPuter();
     if (!puter) {
@@ -389,7 +389,7 @@ export const usePuterStore = create<PuterStore>((set, get) => {
           ],
         },
       ],
-      { model: "gpt-4.1" }
+      { model: "gpt-4.1" },
     ) as Promise<AIResponse | undefined>;
   };
 
@@ -426,7 +426,16 @@ export const usePuterStore = create<PuterStore>((set, get) => {
       setError("Puter.js not available");
       return;
     }
-    return puter.kv.delete(key);
+    // Puter KV might not support true deletion, so we set to empty string
+    try {
+      return await puter.kv.set(key, "");
+    } catch (error) {
+      // If set fails, try remove
+      if (puter.kv.remove) {
+        return await puter.kv.remove(key);
+      }
+      throw error;
+    }
   };
 
   const listKV = async (pattern: string, returnValues?: boolean) => {
@@ -477,7 +486,7 @@ export const usePuterStore = create<PuterStore>((set, get) => {
         prompt: string | ChatMessage[],
         imageURL?: string | PuterChatOptions,
         testMode?: boolean,
-        options?: PuterChatOptions
+        options?: PuterChatOptions,
       ) => chat(prompt, imageURL, testMode, options),
       feedback: (path: string, message: string) => feedback(path, message),
       img2txt: (image: string | File | Blob, testMode?: boolean) =>
@@ -486,7 +495,7 @@ export const usePuterStore = create<PuterStore>((set, get) => {
     kv: {
       get: (key: string) => getKV(key),
       set: (key: string, value: string) => setKV(key, value),
-      delete: (key: string) => deleteKV(key),
+      remove: (key: string) => deleteKV(key),
       list: (pattern: string, returnValues?: boolean) =>
         listKV(pattern, returnValues),
       flush: () => flushKV(),
@@ -495,4 +504,3 @@ export const usePuterStore = create<PuterStore>((set, get) => {
     clearError: () => set({ error: null }),
   };
 });
-
