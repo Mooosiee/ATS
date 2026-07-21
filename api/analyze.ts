@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { prepareInstructions } from "../constants";
+import { prepareInstructions } from "../constants/index";
 
 export default async function handler(
   req: VercelRequest,

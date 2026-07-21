@@ -68,3 +68,6 @@ If you want, I can **explain exactly how it works under the hood**—like how a 
 **TypeScript interface — basically a blueprint that describes what a “user object” looks like.**
 **its not actual data, it’s a type used by TypeScript so your editor (and compiler) knows what to expect.**
 
+
+**Why Gemini API is the "Production" Fix**
+By switching to the Gemini API in a standard POST request (like in your analyze.ts), you moved from a Stateful (WebSocket) to a Stateless (HTTP) architecture.

@@ -1,3 +1,4 @@
+// About this file : Main page where users can upload their resume and job description for analysis
 import { prepareInstructions } from "../../constants";
 import { type FormEvent, useState } from "react";
 import { useNavigate } from "react-router";
@@ -147,13 +148,13 @@ const Upload = () => {
         jobDescription: jobDesc,
       }),
     });
-
+   
     const result = await res.json();
     console.log("API RESULT:", result);
     if (!res.ok) {
       return setStatusText("Error: Failed to analyze resume");
     }
-    // // puter requires websockets hence im using GEMINI API to get feedback from the ai model
+    // // puter requires websockets hence im using GEMINI API to get feedback from the ai model above
     // const feedback = await ai.feedback(
     //   // pass jobDescription to match the prepareInstructions parameter name
     //   uploadedFile.path,

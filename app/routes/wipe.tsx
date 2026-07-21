@@ -1,3 +1,4 @@
+// About this file :  Admin-style page to clear all data
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { usePuterStore } from "~/lib/puter";
