@@ -1,0 +1,376 @@
+That's actually the missing piece. Once you understand these two concepts, the entire debugging process makes sense.
+
+---
+
+# First: What is a serverless function?
+
+Think about a normal backend.
+
+Normally you write:
+
+```text
+React Frontend
+      │
+      ▼
+Express Server (always running)
+      │
+      ▼
+Gemini API
+```
+
+Your Express server is **always alive**.
+
+You run
+
+```bash
+npm start
+```
+
+and Node sits there waiting.
+
+```
+Request 1
+     │
+     ▼
+Node handles it
+
+Request 2
+     │
+     ▼
+Node handles it
+
+Request 3
+     │
+     ▼
+Node handles it
+```
+
+It's like a receptionist sitting at a desk all day waiting for customers.
+
+---
+
+A **serverless function** works differently.
+
+There is **no server waiting**.
+
+Instead, Vercel says:
+
+> "Oh, someone requested `/api/analyze`."
+
+Then it does this:
+
+```
+Incoming Request
+      │
+      ▼
+Start a fresh Node process
+      │
+      ▼
+Run analyze.ts
+      │
+      ▼
+Return response
+      │
+      ▼
+Destroy the process
+```
+
+The process lives for maybe 1–5 seconds.
+
+Then it disappears.
+
+Every request starts from scratch.
+
+That's why they're called **serverless**.
+
+There *is* a server.
+
+You just don't manage it.
+
+Vercel creates it for one request.
+
+---
+
+# What is Node?
+
+Node.js is simply JavaScript running outside the browser.
+
+Normally JavaScript runs here:
+
+```
+Chrome
+Firefox
+Edge
+```
+
+Node lets JavaScript run here:
+
+```
+Linux Server
+Windows
+Mac
+```
+
+So when Vercel executes
+
+```ts
+api/analyze.ts
+```
+
+it is literally running
+
+```
+Node.js
+```
+
+on one of Vercel's machines.
+
+---
+
+# What is ESM?
+
+This is the confusing part.
+
+JavaScript has **two module systems**.
+
+## Old one
+
+```js
+const express = require("express");
+
+module.exports = app;
+```
+
+This is called **CommonJS**.
+
+---
+
+## New one
+
+```js
+import express from "express";
+
+export default app;
+```
+
+This is called **ES Modules (ESM).**
+
+Your project uses this because your package.json contains
+
+```json
+"type": "module"
+```
+
+That tells Node:
+
+> "Treat every file as an ES Module."
+
+---
+
+# Why did ESM matter?
+
+This is where the bug came from.
+
+Imagine this folder:
+
+```
+constants/
+      index.ts
+```
+
+You wrote
+
+```ts
+import { prepareInstructions } from "../constants";
+```
+
+Vite says
+
+> "Oh, he means"
+
+```
+constants/index.ts
+```
+
+and happily loads it.
+
+Node ESM says
+
+> "No."
+
+It looks for exactly
+
+```
+constants
+```
+
+It sees
+
+```
+constants/
+```
+
+which is a folder.
+
+Node says
+
+> "You imported a directory."
+
+and throws
+
+```
+ERR_UNSUPPORTED_DIR_IMPORT
+```
+
+before it even runs your code.
+
+---
+
+# Why didn't Gemini even get called?
+
+Imagine your file.
+
+```ts
+import { prepareInstructions } from "../constants";
+
+export default async function handler(...) {
+    console.log("API HIT");
+
+    ...
+}
+```
+
+Node executes files like this:
+
+## Step 1
+
+Resolve every import.
+
+```
+import ...
+import ...
+import ...
+```
+
+Only after **every import succeeds**
+
+does it continue.
+
+## Step 2
+
+Create the function.
+
+## Step 3
+
+Wait for requests.
+
+---
+
+Your execution never reached Step 2.
+
+It died here:
+
+```
+import { prepareInstructions } from "../constants";
+                    ▲
+                    │
+              crash happens here
+```
+
+That's why Vercel showed
+
+```
+External APIs
+
+No outgoing requests
+```
+
+Gemini never had a chance.
+
+---
+
+# Why did it work locally?
+
+Because locally the execution looked like
+
+```
+React Router
+        │
+        ▼
+Vite Dev Server
+        │
+        ▼
+"Don't worry, I'll resolve
+../constants to index.ts."
+```
+
+Vite is very smart.
+
+It fixes lots of things for developers.
+
+Production doesn't.
+
+Production uses plain Node.
+
+Node is much stricter.
+
+---
+
+# Think of Vite as a helpful translator
+
+Suppose you say
+
+> "Take me to John's house."
+
+Vite says
+
+> "I know which John you mean."
+
+Node says
+
+> "There are three Johns.
+> Give me the exact address."
+
+Your import was essentially saying
+
+```
+Go to constants
+```
+
+Vite translated that into
+
+```
+Go to constants/index.ts
+```
+
+Node refused.
+
+---
+
+# The mental model I use
+
+Whenever I see
+
+```
+api/
+```
+
+inside a Vercel project, I immediately think
+
+```
+This file is NOT running inside React.
+
+This file is running inside Node.
+```
+
+So I ask myself
+
+> If I copied this file onto a Linux server and ran it with plain Node...
+
+would it still work?
+
+That's exactly the environment Vercel is giving you.
+
+---
+
+This distinction—**browser (Vite/React)** vs **server (Node/Vercel Functions)**—is one of the biggest conceptual jumps in modern full-stack development. Once it clicks, a lot of these "works locally but not on Vercel" issues become much easier to reason about.
