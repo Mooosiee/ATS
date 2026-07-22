@@ -71,3 +71,8 @@ If you want, I can **explain exactly how it works under the hood**—like how a 
 
 **Why Gemini API is the "Production" Fix**
 By switching to the Gemini API in a standard POST request (like in your analyze.ts), you moved from a Stateful (WebSocket) to a Stateless (HTTP) architecture.
+
+<!-- But the Node.js runtime that Vercel uses for serverless functions doesn't support importing a directory in ESM mode. It needs an actual file path.
+your import:
+import { prepareInstructions } from "../constants";
+is a directory import, and Vercel's Node.js runtime rejects it. -->

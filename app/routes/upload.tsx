@@ -148,7 +148,11 @@ const Upload = () => {
         jobDescription: jobDesc,
       }),
     });
-   
+    //fixes : SyntaxError: Unexpected token 'A', "A server e"... is not valid JSON for an error response
+    if (!res.ok) {
+      console.error(await res.text());
+      return;
+    }
     const result = await res.json();
     console.log("API RESULT:", result);
     if (!res.ok) {
